@@ -1,6 +1,13 @@
 
 .thebelab-cell {
   border: 1px solid #aaa;
+  position: relative;
+}
+
+.thebelab-button-group {
+  position: absolute;
+  right: 0px;
+  z-index: 3;
 }
 
 .CodeMirror-scroll {
