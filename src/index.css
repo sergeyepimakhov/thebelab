@@ -1,11 +1,11 @@
 
-.thebelab-cell {
+.input_area {
   position: relative;
 }
 
-.thebelab-input {
+/* .thebelab-input {
   border: 1px solid #aaa;
-}
+} */
 
 .thebelab-button-group {
   position: absolute;
@@ -18,6 +18,13 @@
 }
 
 /* no prompts */
-.jp-OutputPrompt {
+/* .jp-OutputPrompt {
   display: none;
+} */
+
+/* unset background color of the output area */
+.jp-OutputArea-output,
+.jp-OutputArea-output > pre {
+    /* border: none; */
+    background-color: transparent; /* why 'transparent' doesn't work ?! */
 }

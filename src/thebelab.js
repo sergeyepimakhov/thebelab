@@ -78,8 +78,6 @@ const _defaultOptions = {
   },
 };
 
-// TODO: inputSelector, outputSelector, cellSelector
-
 let _pageConfigData = undefined;
 function getPageConfig(key) {
   if (typeof window === "undefined") return;
@@ -148,7 +146,6 @@ function renderCell(element, options) {
   // render a single cell
   // element should be a `<pre>` tag with some code in it
   let mergedOptions = mergeOptions({ options });
-  let $cell = $("<div class='thebelab-cell'/>");
   let $element = $(element);
   let $output = $element.closest(mergedOptions.selectors.cell).find(mergedOptions.selectors.output);
   let source = $element.text().trim();
@@ -183,9 +180,9 @@ function renderCell(element, options) {
 
   let language = $element.data("language");
 
-  $element.replaceWith($cell);
+  let $inputArea = $(element).parent().html('');
   let $buttonGroup = $("<div class='thebelab-button-group'>");
-  $cell.append($buttonGroup);
+  $inputArea.append($buttonGroup);
   $buttonGroup.append(
     $("<button class='thebelab-button thebelab-run-button'>")
       .text("run")
@@ -198,20 +195,36 @@ function renderCell(element, options) {
       .attr("title", "restart the kernel")
       .click(restart)
   );
-  let $cm_element = $("<div class='thebelab-input'>");
-  $cell.append($cm_element);
+
+  const mode = language || "python";
+  const required = {
+    value: source,
+    mode: mode,
+    extraKeys: {
+      "Shift-Enter": execute,
+    },
+  };
+  let codeMirrorConfig = Object.assign(
+    mergedOptions.codeMirrorconfig || {},
+    required
+  );
+  let cm = new CodeMirror($inputArea[0], codeMirrorConfig);
+  Mode.ensure(mode).then(() => {
+    cm.setOption("mode", mode);
+  });
+
   let kernelResolve, kernelReject;
   let kernelPromise = new Promise((resolve, reject) => {
     kernelResolve = resolve;
     kernelReject = reject;
   });
   kernelPromise.then(kernel => {
-    $cell.data("kernel", kernel);
+    $inputArea.data("kernel", kernel);
     manager.registerWithKernel(kernel);
     return kernel;
   });
-  $cell.data("kernel-promise-resolve", kernelResolve);
-  $cell.data("kernel-promise-reject", kernelReject);
+  $inputArea.data("kernel-promise-resolve", kernelResolve);
+  $inputArea.data("kernel-promise-reject", kernelReject);
 
   if ($output.length && mergedOptions.predefinedOutput) {
     outputArea.model.add({
@@ -220,11 +233,14 @@ function renderCell(element, options) {
         "text/html": $output.html(),
       },
     });
-    $output.remove();
+    console.log($output[0]);
+    let $outputParent = $output.closest('div.output');
+    $outputParent.html('');
+    Widget.attach(outputArea, $outputParent[0]);
   }
 
   function execute() {
-    let kernel = $cell.data("kernel");
+    let kernel = $inputArea.data("kernel");
     let code = cm.getValue();
     if (!kernel) {
       console.debug("No kernel connected");
@@ -243,7 +259,7 @@ function renderCell(element, options) {
   }
 
   function restart() {
-    let kernel = $cell.data("kernel");
+    let kernel = $inputArea.data("kernel");
     if (kernel) {
       kernelPromise.then(kernel => {
         kernel.restart();
@@ -251,27 +267,7 @@ function renderCell(element, options) {
     }
   }
 
-  let theDiv = document.createElement("div");
-  $cell.append(theDiv);
-  Widget.attach(outputArea, theDiv);
-
-  const mode = language || "python";
-  const required = {
-    value: source,
-    mode: mode,
-    extraKeys: {
-      "Shift-Enter": execute,
-    },
-  };
-  let codeMirrorConfig = Object.assign(
-    mergedOptions.codeMirrorconfig || {},
-    required
-  );
-  let cm = new CodeMirror($cm_element[0], codeMirrorConfig);
-  Mode.ensure(mode).then(() => {
-    cm.setOption("mode", mode);
-  });
-  return $cell;
+  return $inputArea;
 }
 
 export function renderAllCells({ input = _defaultOptions.selectors.input } = {}) {
