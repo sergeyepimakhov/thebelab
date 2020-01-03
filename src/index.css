@@ -1,7 +1,10 @@
 
 .thebelab-cell {
-  border: 1px solid #aaa;
   position: relative;
+}
+
+.thebelab-input {
+  border: 1px solid #aaa;
 }
 
 .thebelab-button-group {

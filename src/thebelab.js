@@ -64,8 +64,11 @@ const _defaultOptions = {
   predefinedOutput: true,
   mathjaxUrl: "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js",
   mathjaxConfig: "TeX-AMS_CHTML-full,Safe",
-  selector: "[data-executable]",
-  outputSelector: "[data-output]",
+  selectors: {
+    cell: "div.cell",
+    input: "div.highlight",
+    output: "div.output_subarea"
+  },
   binderOptions: {
     ref: "master",
     binderUrl: "https://mybinder.org",
@@ -74,6 +77,8 @@ const _defaultOptions = {
     path: "/",
   },
 };
+
+// TODO: inputSelector, outputSelector, cellSelector
 
 let _pageConfigData = undefined;
 function getPageConfig(key) {
@@ -145,7 +150,7 @@ function renderCell(element, options) {
   let mergedOptions = mergeOptions({ options });
   let $cell = $("<div class='thebelab-cell'/>");
   let $element = $(element);
-  let $output = $element.next(mergedOptions.outputSelector);
+  let $output = $element.closest(mergedOptions.selectors.cell).find(mergedOptions.selectors.output);
   let source = $element.text().trim();
   let renderers = {
     initialFactories: getRenderers(mergedOptions),
@@ -263,21 +268,21 @@ function renderCell(element, options) {
     required
   );
   let cm = new CodeMirror($cm_element[0], codeMirrorConfig);
-  Mode.ensure(mode).then(modeSpec => {
+  Mode.ensure(mode).then(() => {
     cm.setOption("mode", mode);
   });
   return $cell;
 }
 
-export function renderAllCells({ selector = _defaultOptions.selector } = {}) {
-  // render all elements matching `selector` as cells.
+export function renderAllCells({ input = _defaultOptions.selectors.input } = {}) {
+  // render all elements matching `input` as cells.
   // by default, this is all cells with `data-executable`
 
   let manager = new ThebeManager({
     loader: requireLoader,
   });
 
-  return $(selector).map((i, cell) =>
+  return $(input).map((i, cell) =>
     renderCell(cell, {
       manager: manager,
     })
@@ -461,7 +466,7 @@ export function bootstrap(options) {
 
   // bootstrap thebelab on the page
   let cells = renderAllCells({
-    selector: options.selector,
+    input: options.selectors.input,
   });
 
   function getKernel() {
@@ -586,10 +591,10 @@ function splitCellOutputPrompt(element, { outPrompt } = {}) {
 
 export function stripPrompts(options) {
   // strip prompts from a
-  $(options.selector).map((i, el) => splitCell($(el), options));
+  $(options.selectors.input).map((i, el) => splitCell($(el), options));
 }
 
 export function stripOutputPrompts(options) {
   // strip prompts from a
-  $(options.selector).map((i, el) => splitCellOutputPrompt($(el), options));
+  $(options.selectors.input).map((i, el) => splitCellOutputPrompt($(el), options));
 }
