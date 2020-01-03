@@ -176,6 +176,8 @@ function renderCell(element, options) {
     rendermime: renderMime,
   });
 
+  let language = $element.data("language");
+
   $element.replaceWith($cell);
   let $buttonGroup = $("<div class='thebelab-button-group'>");
   $cell.append($buttonGroup);
@@ -248,7 +250,7 @@ function renderCell(element, options) {
   $cell.append(theDiv);
   Widget.attach(outputArea, theDiv);
 
-  const mode = $element.data("language") || "python";
+  const mode = language || "python";
   const required = {
     value: source,
     mode: mode,
