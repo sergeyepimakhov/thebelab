@@ -1,11 +1,6 @@
-
 .input_area {
   position: relative;
 }
-
-/* .thebelab-input {
-  border: 1px solid #aaa;
-} */
 
 .thebelab-button-group {
   position: absolute;
@@ -15,16 +10,4 @@
 
 .CodeMirror-scroll {
   height: auto;
-}
-
-/* no prompts */
-/* .jp-OutputPrompt {
-  display: none;
-} */
-
-/* unset background color of the output area */
-.jp-OutputArea-output,
-.jp-OutputArea-output > pre {
-    /* border: none; */
-    background-color: transparent; /* why 'transparent' doesn't work ?! */
 }

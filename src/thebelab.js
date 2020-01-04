@@ -25,9 +25,10 @@ import { requireLoader } from "@jupyter-widgets/html-manager";
 
 import { Mode } from "@jupyterlab/codemirror";
 
-import "@jupyterlab/theme-light-extension/style/index.css";
-import "@jupyter-widgets/controls/css/widgets-base.css";
-import "@jupyterlab/rendermime/style/index.css"
+// import "@jupyterlab/theme-light-extension/style/index.css";
+// import "@jupyter-widgets/controls/css/widgets-base.css";
+// import "@jupyterlab/rendermime/style/index.css";
+// import "@jupyterlab/outputarea/style/index.css";
 import "./index.css";
 
 // Exposing @jupyter-widgets/base and @jupyter-widgets/controls as amd
@@ -67,7 +68,9 @@ const _defaultOptions = {
   selectors: {
     cell: "div.cell",
     input: "div.highlight",
-    output: "div.output_subarea"
+    output: "div.output_subarea",
+    inputParent: "div.input_area",
+    outputParent: "div.output_wrapper",
   },
   binderOptions: {
     ref: "master",
@@ -142,13 +145,13 @@ function getRenderers(options) {
 }
 // rendering cells
 
-function renderCell(element, options) {
+function renderCell(input, options) {
   // render a single cell
   // element should be a `<pre>` tag with some code in it
   let mergedOptions = mergeOptions({ options });
-  let $element = $(element);
-  let $output = $element.closest(mergedOptions.selectors.cell).find(mergedOptions.selectors.output);
-  let source = $element.text().trim();
+  let $input = $(input);
+  let $output = $input.closest(mergedOptions.selectors.cell).find(mergedOptions.selectors.output);
+  let source = $input.text().trim();
   let renderers = {
     initialFactories: getRenderers(mergedOptions),
   };
@@ -178,9 +181,9 @@ function renderCell(element, options) {
     rendermime: renderMime,
   });
 
-  let language = $element.data("language");
+  let language = $input.data("language");
 
-  let $inputArea = $(element).parent().html('');
+  let $inputArea = $(input).closest(mergedOptions.selectors.inputParent).html('');
   let $buttonGroup = $("<div class='thebelab-button-group'>");
   $inputArea.append($buttonGroup);
   $buttonGroup.append(
@@ -234,7 +237,7 @@ function renderCell(element, options) {
       },
     });
     console.log($output[0]);
-    let $outputParent = $output.closest('div.output');
+    let $outputParent = $output.closest(mergedOptions.selectors.outputParent);
     $outputParent.html('');
     Widget.attach(outputArea, $outputParent[0]);
   }
