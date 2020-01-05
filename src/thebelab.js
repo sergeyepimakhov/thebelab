@@ -238,7 +238,6 @@ function renderCell(input, options) {
         "text/html": $output.html(),
       },
     });
-    console.log($output[0]);
     let $outputParent = $output.closest(mergedOptions.selectors.outputParent);
     $outputParent.html('');
     Widget.attach(outputArea, $outputParent[0]);
