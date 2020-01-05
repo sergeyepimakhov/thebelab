@@ -1,3 +1,4 @@
+/* TODO: move to thebelab.js */
 .input_area {
   position: relative;
 }
@@ -8,7 +9,6 @@
   z-index: 3;
 }
 
-.CodeMirror,
-.CodeMirror-scroll {
+.CodeMirror {
   height: auto;
 }
