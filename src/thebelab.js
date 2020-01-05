@@ -25,10 +25,13 @@ import { requireLoader } from "@jupyter-widgets/html-manager";
 
 import { Mode } from "@jupyterlab/codemirror";
 
-import "@jupyterlab/theme-light-extension/style/index.css";
-import "@jupyter-widgets/controls/css/widgets-base.css";
-import "@jupyterlab/rendermime/style/index.css"
+// import "@jupyterlab/theme-light-extension/style/index.css";
+// import "@jupyter-widgets/controls/css/widgets-base.css";
+// import "@jupyterlab/rendermime/style/index.css";
+// import "@jupyterlab/outputarea/style/index.css";
 import "./index.css";
+
+import { observeMutations } from "./mutations";
 
 // Exposing @jupyter-widgets/base and @jupyter-widgets/controls as amd
 // modules for custom widget bundles that depend on it.
@@ -64,8 +67,13 @@ const _defaultOptions = {
   predefinedOutput: true,
   mathjaxUrl: "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js",
   mathjaxConfig: "TeX-AMS_CHTML-full,Safe",
-  selector: "[data-executable]",
-  outputSelector: "[data-output]",
+  selectors: {
+    cell: "div.cell",
+    input: "div.highlight",
+    output: "div.output_subarea",
+    inputParent: "div.input_area",
+    outputParent: "div.output_wrapper",
+  },
   binderOptions: {
     ref: "master",
     binderUrl: "https://mybinder.org",
@@ -139,14 +147,13 @@ function getRenderers(options) {
 }
 // rendering cells
 
-function renderCell(element, options) {
+function renderCell(input, options) {
   // render a single cell
   // element should be a `<pre>` tag with some code in it
   let mergedOptions = mergeOptions({ options });
-  let $cell = $("<div class='thebelab-cell'/>");
-  let $element = $(element);
-  let $output = $element.next(mergedOptions.outputSelector);
-  let source = $element.text().trim();
+  let $input = $(input);
+  let $output = $input.closest(mergedOptions.selectors.cell).find(mergedOptions.selectors.output);
+  let source = $input.text().trim();
   let renderers = {
     initialFactories: getRenderers(mergedOptions),
   };
@@ -176,11 +183,11 @@ function renderCell(element, options) {
     rendermime: renderMime,
   });
 
-  let language = $element.data("language");
+  let language = $input.data("language");
 
-  $element.replaceWith($cell);
+  let $inputArea = $(input).closest(mergedOptions.selectors.inputParent).html('');
   let $buttonGroup = $("<div class='thebelab-button-group'>");
-  $cell.append($buttonGroup);
+  $inputArea.append($buttonGroup);
   $buttonGroup.append(
     $("<button class='thebelab-button thebelab-run-button'>")
       .text("run")
@@ -193,20 +200,36 @@ function renderCell(element, options) {
       .attr("title", "restart the kernel")
       .click(restart)
   );
-  let $cm_element = $("<div class='thebelab-input'>");
-  $cell.append($cm_element);
+
+  const mode = language || "python";
+  const required = {
+    value: source,
+    mode: mode,
+    extraKeys: {
+      "Shift-Enter": execute,
+    },
+  };
+  let codeMirrorConfig = Object.assign(
+    mergedOptions.codeMirrorconfig || {},
+    required
+  );
+  let cm = new CodeMirror($inputArea[0], codeMirrorConfig);
+  Mode.ensure(mode).then(() => {
+    cm.setOption("mode", mode);
+  });
+
   let kernelResolve, kernelReject;
   let kernelPromise = new Promise((resolve, reject) => {
     kernelResolve = resolve;
     kernelReject = reject;
   });
   kernelPromise.then(kernel => {
-    $cell.data("kernel", kernel);
+    $inputArea.data("kernel", kernel);
     manager.registerWithKernel(kernel);
     return kernel;
   });
-  $cell.data("kernel-promise-resolve", kernelResolve);
-  $cell.data("kernel-promise-reject", kernelReject);
+  $inputArea.data("kernel-promise-resolve", kernelResolve);
+  $inputArea.data("kernel-promise-reject", kernelReject);
 
   if ($output.length && mergedOptions.predefinedOutput) {
     outputArea.model.add({
@@ -215,11 +238,14 @@ function renderCell(element, options) {
         "text/html": $output.html(),
       },
     });
-    $output.remove();
+    console.log($output[0]);
+    let $outputParent = $output.closest(mergedOptions.selectors.outputParent);
+    $outputParent.html('');
+    Widget.attach(outputArea, $outputParent[0]);
   }
 
   function execute() {
-    let kernel = $cell.data("kernel");
+    let kernel = $inputArea.data("kernel");
     let code = cm.getValue();
     if (!kernel) {
       console.debug("No kernel connected");
@@ -238,7 +264,7 @@ function renderCell(element, options) {
   }
 
   function restart() {
-    let kernel = $cell.data("kernel");
+    let kernel = $inputArea.data("kernel");
     if (kernel) {
       kernelPromise.then(kernel => {
         kernel.restart();
@@ -246,38 +272,18 @@ function renderCell(element, options) {
     }
   }
 
-  let theDiv = document.createElement("div");
-  $cell.append(theDiv);
-  Widget.attach(outputArea, theDiv);
-
-  const mode = language || "python";
-  const required = {
-    value: source,
-    mode: mode,
-    extraKeys: {
-      "Shift-Enter": execute,
-    },
-  };
-  let codeMirrorConfig = Object.assign(
-    mergedOptions.codeMirrorconfig || {},
-    required
-  );
-  let cm = new CodeMirror($cm_element[0], codeMirrorConfig);
-  Mode.ensure(mode).then(modeSpec => {
-    cm.setOption("mode", mode);
-  });
-  return $cell;
+  return $inputArea;
 }
 
-export function renderAllCells({ selector = _defaultOptions.selector } = {}) {
-  // render all elements matching `selector` as cells.
+export function renderAllCells({ input = _defaultOptions.selectors.input } = {}) {
+  // render all elements matching `input` as cells.
   // by default, this is all cells with `data-executable`
 
   let manager = new ThebeManager({
     loader: requireLoader,
   });
 
-  return $(selector).map((i, cell) =>
+  return $(input).map((i, cell) =>
     renderCell(cell, {
       manager: manager,
     })
@@ -461,8 +467,11 @@ export function bootstrap(options) {
 
   // bootstrap thebelab on the page
   let cells = renderAllCells({
-    selector: options.selector,
+    input: options.selectors.input,
   });
+
+  // start following mutations on the page
+  observeMutations();
 
   function getKernel() {
     if (options.binderOptions.repo) {
@@ -586,10 +595,10 @@ function splitCellOutputPrompt(element, { outPrompt } = {}) {
 
 export function stripPrompts(options) {
   // strip prompts from a
-  $(options.selector).map((i, el) => splitCell($(el), options));
+  $(options.selectors.input).map((i, el) => splitCell($(el), options));
 }
 
 export function stripOutputPrompts(options) {
   // strip prompts from a
-  $(options.selector).map((i, el) => splitCellOutputPrompt($(el), options));
+  $(options.selectors.input).map((i, el) => splitCellOutputPrompt($(el), options));
 }

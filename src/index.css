@@ -1,6 +1,4 @@
-
-.thebelab-cell {
-  border: 1px solid #aaa;
+.input_area {
   position: relative;
 }
 
@@ -12,9 +10,4 @@
 
 .CodeMirror-scroll {
   height: auto;
-}
-
-/* no prompts */
-.jp-OutputPrompt {
-  display: none;
 }
