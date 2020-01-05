@@ -31,6 +31,8 @@ import { Mode } from "@jupyterlab/codemirror";
 // import "@jupyterlab/outputarea/style/index.css";
 import "./index.css";
 
+import { observeMutations } from "./mutations";
+
 // Exposing @jupyter-widgets/base and @jupyter-widgets/controls as amd
 // modules for custom widget bundles that depend on it.
 
@@ -467,6 +469,9 @@ export function bootstrap(options) {
   let cells = renderAllCells({
     input: options.selectors.input,
   });
+
+  // start following mutations on the page
+  observeMutations();
 
   function getKernel() {
     if (options.binderOptions.repo) {

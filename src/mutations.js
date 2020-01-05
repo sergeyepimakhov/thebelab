@@ -1,4 +1,6 @@
-const observer = new MutationObserver(function (mutations) {
+export { observeMutations };
+
+const observer = new MutationObserver(function () {
     // output
     $('div.p-Widget.jp-OutputArea').addClass('output').removeClass('jp-OutputArea');
     // output_area
@@ -13,11 +15,14 @@ const observer = new MutationObserver(function (mutations) {
     $('div.p-Widget.jp-RenderedHTML').removeClass('jp-RenderedHTML');
     $('div.p-Widget.jp-mod-trusted').removeClass('jp-mod-trusted');
     $('div.p-Widget.jp-OutputArea-output').removeClass('jp-OutputArea-output');
-  });
-    
+});
 
 
-observer.observe(document.documentElement, 
-    {childList: true,
-    subtree: true,
-    characterDataOldValue: true});
+function observeMutations() {
+    observer.observe(document.documentElement,
+        {
+            childList: true,
+            subtree: true,
+            characterDataOldValue: true
+        });
+}
