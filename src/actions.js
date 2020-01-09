@@ -1,8 +1,9 @@
 export { selectNextCellCode };
 
 const selectNextCellCode = function () {
-    $('div.cell.code_cell.selected')
-        .removeClass('selected')
-        .nextAll('div.cell.code_cell').first()
-        .addClass('selected');
+    let $code_cell = $('div.cell.code_cell.selected'); 
+    $code_cell.removeClass('selected');
+
+    let $next_code_cell = $code_cell.nextAll('div.cell.code_cell').first();
+    $next_code_cell.addClass('selected');
 };
