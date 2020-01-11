@@ -11,10 +11,10 @@ const observer = new MutationObserver(function () {
     // subarea 
     // output_subarea output_stream output_stdout( or output_error) output_text
     // jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output
-    $('div.p-Widget.jp-RenderedHTMLCommon').addClass('output_subarea').removeClass('jp-RenderedHTMLCommon');
+    $('div.p-Widget.jp-OutputArea-output').addClass('output_subarea').removeClass('jp-OutputArea-output');
+    $('div.p-Widget.jp-RenderedHTMLCommon').removeClass('jp-RenderedHTMLCommon');
     $('div.p-Widget.jp-RenderedHTML').removeClass('jp-RenderedHTML');
     $('div.p-Widget.jp-mod-trusted').removeClass('jp-mod-trusted');
-    $('div.p-Widget.jp-OutputArea-output').removeClass('jp-OutputArea-output');
 });
 
 
