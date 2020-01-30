@@ -26,7 +26,6 @@ import { requireLoader } from "@jupyter-widgets/html-manager";
 import { Mode } from "@jupyterlab/codemirror";
 
 import "./index.css";
-import { observeMutations } from "./mutations";
 import { selectNextCellCode } from "./actions";
 
 // Exposing @jupyter-widgets/base and @jupyter-widgets/controls as amd
@@ -466,9 +465,6 @@ export function bootstrap(options) {
   let cells = renderAllCells({
     input: options.selectors.input,
   });
-
-  // start following mutations on the page
-  observeMutations();
 
   function getKernel() {
     if (options.binderOptions.repo) {
