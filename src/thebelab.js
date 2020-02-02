@@ -185,13 +185,13 @@ function renderCell(input, options) {
   $inputArea.append($buttonGroup);
   $buttonGroup.append(
     $("<button class='thebelab-button thebelab-run-button'>")
-      .text("run")
+      //.text("run")
       .attr("title", "run this cell")
       .click(execute)
   );
   $buttonGroup.append(
     $("<button class='thebelab-button thebelab-restart-button'>")
-      .text("restart")
+      //.text("restart")
       .attr("title", "restart the kernel")
       .click(restart)
   );

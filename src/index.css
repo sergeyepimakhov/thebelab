@@ -1,4 +1,5 @@
 /* TODO: move to thebelab.js */
+/*
 .input_area {
   position: relative;
 }
@@ -7,6 +8,19 @@
   position: absolute;
   right: 0px;
   z-index: 3;
+}
+*/
+
+button.thebelab-run-button:after{
+  content: "\25B6";
+  font-weight: 900;
+  color: green;
+}
+
+button.thebelab-restart-button:after{
+  content: "\21a9";
+  font-weight: 900;
+  color: green;
 }
 
 .CodeMirror {
