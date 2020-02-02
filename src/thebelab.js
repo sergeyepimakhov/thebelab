@@ -26,7 +26,6 @@ import { requireLoader } from "@jupyter-widgets/html-manager";
 import { Mode } from "@jupyterlab/codemirror";
 
 import "./index.css";
-import { selectNextCellCode } from "./actions";
 
 // Exposing @jupyter-widgets/base and @jupyter-widgets/controls as amd
 // modules for custom widget bundles that depend on it.
@@ -239,8 +238,6 @@ function renderCell(input, options) {
   }
 
   function execute() {
-    selectNextCellCode();
-    
     let kernel = $inputArea.data("kernel");
     let code = cm.getValue();
     if (!kernel) {
