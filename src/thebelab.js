@@ -286,7 +286,10 @@ export function renderAllCells({ input = _defaultOptions.selectors.input } = {})
 export function hookupKernel(kernel, cells) {
   // hooks up cells to the kernel
   cells.map((i, cell) => {
-    $(cell).data("kernel-promise-resolve")(kernel);
+    if ($(cell).data("kernel-promise-resolve") != null){
+      // dummy fix
+      $(cell).data("kernel-promise-resolve")(kernel);
+    }
   });
 }
 
@@ -492,6 +495,8 @@ export function bootstrap(options) {
     // debug
     if (typeof window !== "undefined") window.thebeKernel = kernel;
     hookupKernel(kernel, cells);
+  }).catch(e => {
+    console.log(e);
   });
   return kernelPromise;
 }
